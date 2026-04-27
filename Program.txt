@@ -1,0 +1,42 @@
+/*
+ * Battery Voltage Monitor for 3S Li-ion Pack
+ * Connect Battery (+) -> 10k Resistor -> A0 -> 4.7k Resistor -> GND
+ */
+
+const int batteryPin = A0;
+const float referenceVoltage = 5.0; // Set to 3.3 for 3.3V boards (like ESP32)
+const float R1 = 10000.0; // 10k Ohm
+const float R2 = 4700.0;  // 4.7k Ohm
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(batteryPin, INPUT);
+  Serial.println("Battery Monitor Initialized...");
+}
+
+void loop() {
+  // Read the analog value
+  int sensorValue = analogRead(batteryPin);
+  
+  // Convert to voltage at the pin
+  float pinVoltage = sensorValue * (referenceVoltage / 1023.0);
+  
+  // Calculate actual battery voltage using divider ratio: Vout = Vin * (R2 / (R1 + R2))
+  float batteryVoltage = pinVoltage * ((R1 + R2) / R2);
+
+  // Output to Serial Monitor
+  Serial.print("Voltage: ");
+  Serial.print(batteryVoltage);
+  Serial.println("V");
+
+  // Basic Status Logic
+  if (batteryVoltage < 9.6) {
+    Serial.println("Warning: Battery Low! Charge immediately.");
+  } else if (batteryVoltage > 12.5) {
+    Serial.println("Status: Fully Charged.");
+  } else {
+    Serial.println("Status: Normal.");
+  }
+
+  delay(2000); // Check every 2 seconds
+}
